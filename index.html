@@ -3,28 +3,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flor Turtle</title>
 
 ```
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Flor Turtle</title>
+
 <style>
+
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
         width: 100%;
         height: 100%;
         overflow: hidden;
         background: black;
     }
 
+    body {
+        position: fixed;
+        inset: 0;
+    }
+
     canvas {
         display: block;
+        width: 100vw;
+        height: 100vh;
         background: black;
     }
+
 </style>
 ```
 
@@ -39,31 +52,79 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+
+// =====================================================
+// VARIABLES DE PANTALLA
+// =====================================================
+
+let centroX = 0;
+let centroY = 0;
+let escala = 1;
 
 
 // =====================================================
-// ESCALA
+// CONFIGURAR CANVAS RESPONSIVO
 // =====================================================
 
-const escala = 1.0;
+function ajustarCanvas() {
+
+    const ancho = window.innerWidth;
+    const alto = window.innerHeight;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = ancho * dpr;
+    canvas.height = alto * dpr;
+
+    canvas.style.width = ancho + "px";
+    canvas.style.height = alto + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    centroX = ancho / 2;
+    centroY = alto / 2;
+
+
+    // =================================================
+    // ESCALA RESPONSIVA
+    // =================================================
+    //
+    // En PC se mantiene grande.
+    // En celular se reduce para que entre completa.
+    //
+
+    const tamañoBase = Math.min(ancho, alto);
+
+    escala = tamañoBase / 700;
+
+    // Evita que sea demasiado pequeña
+    if (escala < 0.65) {
+        escala = 0.65;
+    }
+
+    // Evita que sea exageradamente grande
+    if (escala > 1.25) {
+        escala = 1.25;
+    }
+}
+
+
+// Ejecutar al comenzar
+ajustarCanvas();
 
 
 // =====================================================
-// SISTEMA DE COORDENADAS
+// CONVERTIR COORDENADAS TURTLE A CANVAS
 // =====================================================
-
-let centroX = canvas.width / 2;
-let centroY = canvas.height / 2;
-
 
 function canvasX(x) {
+
     return centroX + x * escala;
 }
 
 
 function canvasY(y) {
+
     return centroY - y * escala;
 }
 
@@ -73,6 +134,7 @@ function canvasY(y) {
 // =====================================================
 
 const naranja = "#FFA216";
+
 const cafe = "#884513";
 
 
@@ -86,31 +148,43 @@ let heading = 0;
 
 
 function rt(grados) {
+
     heading -= grados;
 }
 
 
 function lt(grados) {
+
     heading += grados;
 }
 
 
 // =====================================================
-// GUARDAR LÍNEAS DE LAS HOJAS
+// HOJAS
 // =====================================================
 
 let hojas = [];
 
 
+// =====================================================
+// GUARDAR CÍRCULO
+// =====================================================
+
 function guardarCircle(radius, extent) {
 
-    let h = heading * Math.PI / 180;
+    let h =
+        heading * Math.PI / 180;
+
 
     let centerXLocal =
-        turtleX - Math.sin(h) * radius;
+        turtleX -
+        Math.sin(h) * radius;
+
 
     let centerYLocal =
-        turtleY + Math.cos(h) * radius;
+        turtleY +
+        Math.cos(h) * radius;
+
 
     let startAngle =
         Math.atan2(
@@ -118,8 +192,15 @@ function guardarCircle(radius, extent) {
             turtleX - centerXLocal
         );
 
+
     const pasos =
-        Math.max(8, Math.ceil(Math.abs(extent) / 3));
+        Math.max(
+            8,
+            Math.ceil(
+                Math.abs(extent) / 3
+            )
+        );
+
 
     let anteriorX = turtleX;
     let anteriorY = turtleY;
@@ -127,26 +208,37 @@ function guardarCircle(radius, extent) {
 
     for (let i = 1; i <= pasos; i++) {
 
-        let porcentaje = i / pasos;
+        let porcentaje =
+            i / pasos;
+
 
         let angulo =
             startAngle +
-            extent * Math.PI / 180 * porcentaje;
+            extent *
+            Math.PI / 180 *
+            porcentaje;
+
 
         let nuevoX =
             centerXLocal +
-            radius * Math.cos(angulo);
+            radius *
+            Math.cos(angulo);
+
 
         let nuevoY =
             centerYLocal +
-            radius * Math.sin(angulo);
+            radius *
+            Math.sin(angulo);
 
 
         hojas.push({
+
             x1: anteriorX,
             y1: anteriorY,
+
             x2: nuevoX,
             y2: nuevoY
+
         });
 
 
@@ -163,10 +255,14 @@ function guardarCircle(radius, extent) {
         startAngle +
         extent * Math.PI / 180;
 
-    let signo = extent >= 0 ? 1 : -1;
+
+    let signo =
+        extent >= 0 ? 1 : -1;
+
 
     heading =
-        direccionTangente * 180 / Math.PI +
+        direccionTangente *
+        180 / Math.PI +
         signo * 90;
 }
 
@@ -188,6 +284,7 @@ function crearHojas() {
 
             rt(90);
 
+
             guardarCircle(
                 150 - j * 6,
                 90
@@ -196,6 +293,7 @@ function crearHojas() {
 
             lt(90);
 
+
             guardarCircle(
                 150 - j * 6,
                 90
@@ -203,6 +301,7 @@ function crearHojas() {
 
 
             rt(180);
+
 
             guardarCircle(
                 40,
@@ -219,38 +318,35 @@ crearHojas();
 // =====================================================
 // PUNTOS CAFÉS
 // =====================================================
-//
-// 800 puntos, pero dentro del mismo margen aproximado
-// que tenían los 140 puntos originales.
-//
-// Radio máximo original:
-// 4 * sqrt(139) ≈ 47
-//
-// Ahora usamos un radio máximo de aproximadamente 47.
-// =====================================================
 
 let puntosCafe = [];
 
 const golden_ang = 137.508;
 
 const phi =
-    golden_ang * Math.PI / 180;
+    golden_ang *
+    Math.PI / 180;
 
 
-// Cantidad de puntos
 const cantidadPuntos = 800;
 
 
-// Radio máximo
-const radioMaximo = 50;
+// Mismo margen que antes
+const radioMaximo = 47;
 
 
-for (let i = 0; i < cantidadPuntos; i++) {
+for (
+    let i = 0;
+    i < cantidadPuntos;
+    i++
+) {
 
-    // Distribución uniforme dentro del mismo margen
     const r =
         radioMaximo *
-        Math.sqrt(i / cantidadPuntos);
+        Math.sqrt(
+            i / cantidadPuntos
+        );
+
 
     const theta =
         i * phi;
@@ -259,13 +355,16 @@ for (let i = 0; i < cantidadPuntos; i++) {
     const x =
         r * Math.cos(theta);
 
+
     const y =
         r * Math.sin(theta);
 
 
     puntosCafe.push({
+
         x: x,
         y: y
+
     });
 }
 
@@ -282,42 +381,71 @@ function crearA(x, y) {
     const positions_a = [
 
         // Lado izquierdo
+
         [x, y],
+
         [x + 3, y + 6],
+
         [x + 6, y + 12],
+
         [x + 9, y + 18],
+
         [x + 12, y + 24],
+
         [x + 15, y + 30],
+
         [x + 18, y + 36],
+
         [x + 21, y + 42],
+
         [x + 24, y + 48],
+
         [x + 30, y + 52],
 
+
         // Lado derecho
+
         [x + 36, y + 48],
+
         [x + 39, y + 42],
+
         [x + 42, y + 36],
+
         [x + 45, y + 30],
+
         [x + 48, y + 24],
+
         [x + 51, y + 18],
+
         [x + 54, y + 12],
+
         [x + 57, y + 6],
+
         [x + 60, y],
 
-        // Barra central
+
+        // Barra
+
         [x + 18, y + 24],
+
         [x + 24, y + 24],
+
         [x + 30, y + 24],
+
         [x + 35, y + 24],
+
         [x + 42, y + 24]
+
     ];
 
 
     for (const pos of positions_a) {
 
         posicionesA.push({
+
             x: pos[0],
             y: pos[1]
+
         });
     }
 }
@@ -333,29 +461,38 @@ crearA(-30, -20);
 function dibujarHojas(cantidad) {
 
     ctx.strokeStyle = naranja;
-    ctx.lineWidth = 1;
+
+    ctx.lineWidth = Math.max(
+        0.7,
+        escala
+    );
 
 
     for (
         let i = 0;
-        i < cantidad && i < hojas.length;
+        i < cantidad &&
+        i < hojas.length;
         i++
     ) {
 
-        const linea = hojas[i];
+        const linea =
+            hojas[i];
 
 
         ctx.beginPath();
+
 
         ctx.moveTo(
             canvasX(linea.x1),
             canvasY(linea.y1)
         );
 
+
         ctx.lineTo(
             canvasX(linea.x2),
             canvasY(linea.y2)
         );
+
 
         ctx.stroke();
     }
@@ -373,22 +510,32 @@ function dibujarPuntos(cantidad) {
 
     for (
         let i = 0;
-        i < cantidad && i < puntosCafe.length;
+        i < cantidad &&
+        i < puntosCafe.length;
         i++
     ) {
 
-        const punto = puntosCafe[i];
+        const punto =
+            puntosCafe[i];
 
 
         ctx.beginPath();
 
+
         ctx.arc(
+
             canvasX(punto.x),
+
             canvasY(punto.y),
-            3,
+
+            3 * escala,
+
             0,
+
             Math.PI * 2
+
         );
+
 
         ctx.fill();
     }
@@ -396,7 +543,7 @@ function dibujarPuntos(cantidad) {
 
 
 // =====================================================
-// DIBUJAR A
+// DIBUJAR LETRA A
 // =====================================================
 
 function dibujarA(cantidad) {
@@ -405,26 +552,40 @@ function dibujarA(cantidad) {
 
     ctx.strokeStyle = "black";
 
-    ctx.lineWidth = 1;
+
+    ctx.lineWidth =
+        Math.max(
+            0.7,
+            escala
+        );
 
 
     for (
         let i = 0;
-        i < cantidad && i < posicionesA.length;
+        i < cantidad &&
+        i < posicionesA.length;
         i++
     ) {
 
-        const punto = posicionesA[i];
+        const punto =
+            posicionesA[i];
 
 
         ctx.beginPath();
 
+
         ctx.arc(
+
             canvasX(punto.x),
+
             canvasY(punto.y),
-            4,
+
+            4 * escala,
+
             0,
+
             Math.PI * 2
+
         );
 
 
@@ -460,7 +621,7 @@ const velocidadA = 1;
 
 
 // =====================================================
-// FUNCIÓN DE ANIMACIÓN
+// ANIMAR
 // =====================================================
 
 function animar() {
@@ -468,23 +629,28 @@ function animar() {
     ctx.clearRect(
         0,
         0,
-        canvas.width,
-        canvas.height
+        window.innerWidth,
+        window.innerHeight
     );
 
 
     // =================================================
-    // ETAPA 1 - HOJAS
+    // HOJAS
     // =================================================
 
     if (etapa === 0) {
 
-        hojasActuales += velocidadHojas;
+        hojasActuales +=
+            velocidadHojas;
 
 
-        if (hojasActuales >= hojas.length) {
+        if (
+            hojasActuales >=
+            hojas.length
+        ) {
 
-            hojasActuales = hojas.length;
+            hojasActuales =
+                hojas.length;
 
             etapa = 1;
         }
@@ -492,17 +658,22 @@ function animar() {
 
 
     // =================================================
-    // ETAPA 2 - PUNTOS CAFÉS
+    // PUNTOS CAFÉS
     // =================================================
 
     else if (etapa === 1) {
 
-        puntosActuales += velocidadCafe;
+        puntosActuales +=
+            velocidadCafe;
 
 
-        if (puntosActuales >= puntosCafe.length) {
+        if (
+            puntosActuales >=
+            puntosCafe.length
+        ) {
 
-            puntosActuales = puntosCafe.length;
+            puntosActuales =
+                puntosCafe.length;
 
             etapa = 2;
         }
@@ -510,17 +681,22 @@ function animar() {
 
 
     // =================================================
-    // ETAPA 3 - LETRA A
+    // LETRA A
     // =================================================
 
     else if (etapa === 2) {
 
-        puntosAActuales += velocidadA;
+        puntosAActuales +=
+            velocidadA;
 
 
-        if (puntosAActuales >= posicionesA.length) {
+        if (
+            puntosAActuales >=
+            posicionesA.length
+        ) {
 
-            puntosAActuales = posicionesA.length;
+            puntosAActuales =
+                posicionesA.length;
 
             etapa = 3;
         }
@@ -531,19 +707,27 @@ function animar() {
     // ORDEN DE DIBUJO
     // =================================================
 
-    // Hojas primero
-    dibujarHojas(hojasActuales);
+    // 1. Hojas
+    dibujarHojas(
+        hojasActuales
+    );
 
 
-    // Puntos cafés después
-    dibujarPuntos(puntosActuales);
+    // 2. Puntos cafés
+    dibujarPuntos(
+        puntosActuales
+    );
 
 
-    // A al final
-    dibujarA(puntosAActuales);
+    // 3. Letra A
+    dibujarA(
+        puntosAActuales
+    );
 
 
-    requestAnimationFrame(animar);
+    requestAnimationFrame(
+        animar
+    );
 }
 
 
@@ -555,17 +739,35 @@ animar();
 
 
 // =====================================================
-// REDIMENSIONAR
+// RESPONSIVIDAD
 // =====================================================
 
-window.addEventListener("resize", () => {
+window.addEventListener(
+    "resize",
+    () => {
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+        ajustarCanvas();
 
-    centroX = canvas.width / 2;
-    centroY = canvas.height / 2;
-});
+    }
+);
+
+
+// =====================================================
+// CAMBIO DE ORIENTACIÓN DEL CELULAR
+// =====================================================
+
+window.addEventListener(
+    "orientationchange",
+    () => {
+
+        setTimeout(() => {
+
+            ajustarCanvas();
+
+        }, 100);
+
+    }
+);
 
 </script>
 
